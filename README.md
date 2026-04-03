@@ -151,3 +151,4 @@ Charts are drawn on `<canvas>` elements using the native Canvas 2D API. No Chart
 
 Made with ❤️ using Vanilla JS, HTML5 Canvas, and CSS Variables.
 # Finance-Dashboard
+# Finance-Dashboard
