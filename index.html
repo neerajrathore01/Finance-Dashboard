@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FinTrack – Personal Finance Dashboard</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>" />
+</head>
+<body>
+
+<!-- ============================================================
+     SIDEBAR
+     ============================================================ -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">💸</div>
+    <span class="brand-name">FinTrack</span>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Menu</div>
+    <a class="nav-link active" data-section="dashboard">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-link" data-section="transactions">
+      <span class="nav-icon">💳</span> Transactions
+    </a>
+    <a class="nav-link" data-section="insights">
+      <span class="nav-icon">💡</span> Insights
+    </a>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="role-selector">
+      <label>Switch Role (Demo)</label>
+      <div class="role-sel-wrap">
+        <select id="roleSel">
+          <option value="viewer">Viewer</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
+      <span id="roleTag" class="role-tag viewer">👁 Viewer</span>
+    </div>
+  </div>
+</aside>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
+<main class="main">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="pageTitle">Dashboard</h1>
+      <p>Personal Finance Overview • Jan–Jun 2025</p>
+    </div>
+    <div class="topbar-actions">
+      
+      <div class="export-group">
+        <button class="btn-outline" id="exportCSV">⬇ CSV</button>
+        <button class="btn-outline" id="exportJSON">⬇ JSON</button>
+      </div>
+      <button class="btn-primary admin-only" id="addTxBtn" style="display:none">
+        <span>＋</span> <span>Add Transaction</span>
+      </button>
+      <button class="btn-icon" id="darkToggle" title="Toggle Dark Mode">🌙</button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <section class="section active" id="dashboard">
+
+      <!-- Summary Cards -->
+      <div class="cards-grid">
+        <div class="card balance" id="balanceCard">
+          <span class="card-icon">⚖️</span>
+          <div class="card-label">Total Balance</div>
+          <div class="card-value" id="totalBalance">₹0</div>
+          <div class="card-sub">Income minus Expenses</div>
+        </div>
+        <div class="card income">
+          <span class="card-icon">📈</span>
+          <div class="card-label">Total Income</div>
+          <div class="card-value" id="totalIncome">₹0</div>
+          <div class="card-sub">All time earnings</div>
+        </div>
+        <div class="card expense">
+          <span class="card-icon">📉</span>
+          <div class="card-label">Total Expenses</div>
+          <div class="card-value" id="totalExpense">₹0</div>
+          <div class="card-sub">All time spending</div>
+        </div>
+        <div class="card transactions">
+          <span class="card-icon">🧾</span>
+          <div class="card-label">Transactions</div>
+          <div class="card-value" id="txCount">0</div>
+          <div class="card-sub">Total records</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Monthly Income vs Expenses</div>
+          <div class="chart-sub">Bar + trend line • Jan–Jun 2025</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="monthlyChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Spending Breakdown</div>
+          <div class="chart-sub">Category distribution (expenses only)</div>
+          <div class="chart-canvas-wrap">
+            <canvas id="donutChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== TRANSACTIONS ==================== -->
+    <section class="section" id="transactions">
+      <div class="section-header">
+        <div class="section-title">All Transactions</div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="searchInput" placeholder="Search transactions…" />
+        </div>
+        <select class="filter-sel" id="filterType">
+          <option value="all">All Types</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <select class="filter-sel" id="filterCategory"></select>
+        <select class="filter-sel" id="filterMonth"></select>
+        <button class="btn-outline" id="clearFilters">✕ Clear</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="date">Date<span class="sort-indicator"> ▼</span></th>
+              <th data-sort="description">Description<span class="sort-indicator"> ⇅</span></th>
+              <th data-sort="type">Type<span class="sort-indicator"> ⇅</span></th>
+              <th data-sort="amount">Amount<span class="sort-indicator"> ⇅</span></th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="txTableBody"></tbody>
+        </table>
+
+        <!-- Empty State -->
+        <div id="emptyState">
+          <div class="empty-icon">🔍</div>
+          <h3>No transactions found</h3>
+          <p>Try adjusting your filters or search query</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== INSIGHTS ==================== -->
+    <section class="section" id="insights">
+      <div class="section-header">
+        <div class="section-title">Insights & Analysis</div>
+      </div>
+      <div class="insights-grid" id="insightCards"></div>
+    </section>
+
+  </div><!-- /content -->
+</main>
+
+<!-- ============================================================
+     ADD / EDIT TRANSACTION MODAL
+     ============================================================ -->
+<div class="modal-overlay" id="txModal">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Transaction</h2>
+      <button class="btn-icon" id="modalClose">✕</button>
+    </div>
+
+    <form id="txForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="txDate">Date</label>
+          <input type="date" id="txDate" required />
+        </div>
+        <div class="form-group">
+          <label for="txAmount">Amount (₹)</label>
+          <input type="number" id="txAmount" placeholder="0" min="1" required />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="txDesc">Description</label>
+        <input type="text" id="txDesc" placeholder="Transaction description…" required />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="txCategory">Category</label>
+          <select id="txCategory">
+            <option>Income</option>
+            <option>Food</option>
+            <option>Shopping</option>
+            <option>Utilities</option>
+            <option>Entertainment</option>
+            <option>Transport</option>
+            <option>Health</option>
+            <option>Education</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="txType">Type</label>
+          <select id="txType">
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="modalOverlay" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="btn-submit">Save Transaction</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Scripts (order matters!) -->
+<script src="js/state.js"></script>
+<script src="js/charts.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
