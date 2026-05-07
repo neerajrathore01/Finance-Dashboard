@@ -332,4 +332,101 @@ function applyDarkMode() {
   document.getElementById("darkToggle").textContent = state.darkMode ? "☀️" : "🌙";
 }
 
+/* ============================================================
+   SIDEBAR HAMBURGER TOGGLE
+   Paste this at the END of your app.js file (ya ek alag script tag mein)
+   ============================================================ */
 
+(function initSidebarToggle() {
+  // DOM Elements
+  const sidebar = document.querySelector('.sidebar');
+  const main    = document.querySelector('.main');
+
+  if (!sidebar) return; // safety check
+
+  /* ---- 1. Hamburger Button banana (topbar mein inject) ---- */
+  const hamburgerBtn = document.createElement('button');
+  hamburgerBtn.className = 'hamburger-btn';
+  hamburgerBtn.setAttribute('aria-label', 'Menu kholein');
+  hamburgerBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="3" y1="6"  x2="21" y2="6"/>
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>`;
+
+  // Topbar mein pehle element ki jagah insert karo
+  const topbar = document.querySelector('.topbar');
+  if (topbar) {
+    topbar.insertBefore(hamburgerBtn, topbar.firstChild);
+  }
+
+  /* ---- 2. Overlay banana ---- */
+  const overlay = document.createElement('div');
+  overlay.className = 'sidebar-overlay';
+  document.body.appendChild(overlay);
+
+  /* ---- 3. Close button sidebar ke andar ---- */
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'sidebar-close-btn';
+  closeBtn.setAttribute('aria-label', 'Sidebar band karein');
+  closeBtn.innerHTML = `
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round">
+      <line x1="18" y1="6"  x2="6"  y2="18"/>
+      <line x1="6"  y1="6"  x2="18" y2="18"/>
+    </svg>`;
+
+  // Brand ke baad insert karo
+  const brand = sidebar.querySelector('.brand');
+  if (brand) {
+    // Brand ko ek row wrapper mein wrap karo
+    const brandRow = document.createElement('div');
+    brandRow.className = 'brand-row';
+    brand.parentNode.insertBefore(brandRow, brand);
+    brandRow.appendChild(brand);
+    brandRow.appendChild(closeBtn);
+  } else {
+    sidebar.insertBefore(closeBtn, sidebar.firstChild);
+  }
+
+  /* ---- 4. Open / Close functions ---- */
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden'; // scroll rok do
+    hamburgerBtn.setAttribute('aria-expanded', 'true');
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('active');
+    document.body.style.overflow = '';
+    hamburgerBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  /* ---- 5. Event Listeners ---- */
+  hamburgerBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  // Nav link click pe auto-close (mobile pe)
+  sidebar.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+
+  // Escape key se band karo
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar();
+  });
+
+  // Resize pe auto-close (agar desktop pe wapas aao)
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+      closeSidebar();
+      document.body.style.overflow = '';
+    }
+  });
+
+})();
